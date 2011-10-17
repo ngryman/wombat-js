@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<title>Unit test file | <%= title %> | <%= template_name %> template | <%= timestamp %></title>
+	<%= script_tag('lib_assets/unittest_transport.js') %>
+	<%= script_tag('assets/qunit.js') %>
+	<%= link_tag('assets/qunit.css') %>
+	<%= script_tag('assets/wombat-debug.js') %>
+	<%= css_fixtures %>
+	<%= js_fixtures %>
+	<%= test_file %>
+	
+	<script>
+		QUnit.done = function(resuls) {
+			postUnittestResults({
+				tests: resuls.total,
+				assertions: resuls.passed,
+				failures: resuls.failed,
+				errors: 0
+			});
+		};
+	</script>
+</head>
+<body>
+	<h1 id="qunit-header">QUnit Test Suite</h1>
+	<h2 id="qunit-banner"></h2>
+	<div id="qunit-testrunner-toolbar"></div>
+	<h2 id="qunit-userAgent"></h2>
+	<ol id="qunit-tests"></ol>
+	<div id="qunit-fixture">test markup</div>
+	
+	<form id="unittest_js_transport_form" action="/results" method="post" target="unittest_js_transport_result" style="display: none">
+		<input id="unittest_js_tests" name="unittest_js_tests" type="hidden">
+		<input id="unittest_js_assertions" name="unittest_js_assertions" type="hidden">
+		<input id="unittest_js_failures" name="unittest_js_failures" type="hidden">
+		<input id="unittest_js_errors" name="unittest_js_errors" type="hidden">
+	</form>
+	<iframe id="unittest_js_transport_result" name="unittest_js_transport_result" src="javascript:false" style="visibility: hidden; width: 0; height: 0;"></iframe>
+	
+	<%= html_fixtures %>
+</body>
+</html>
