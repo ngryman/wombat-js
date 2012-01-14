@@ -14,14 +14,13 @@ module Wombat
   BUILD_DIR     = ROOT_DIR.join('build')
   DOC_DIR       = ROOT_DIR.join('doc')
   PKG_DIR       = ROOT_DIR.join('pkg')
-  TEST_DIR      = ROOT_DIR.join('test')
-  TEST_RUN_DIR  = BUILD_DIR.join('test')
+  SPEC_DIR      = ROOT_DIR.join('spec')
   VENDOR_DIR    = ROOT_DIR.join('vendor')
   
   VERSION       = '0.1' #: load from file (YAML.load(IO.read(SOURCE_DIR.join('constants.yml')))['PROTOTYPE_VERSION'])
   
   # add needed tools to load path
-  %w[sprockets closure-compiler unittest_js].each do |name|
+  %w[sprockets closure-compiler].each do |name|
     $:.unshift(Wombat::VENDOR_DIR.join(name, 'lib'))
   end
   
@@ -72,22 +71,6 @@ module Wombat
   
   def self.require_closure_compiler
     require_submodule('Closure Compiler', 'closure-compiler')
-  end
-  
-  
-  def self.require_unittest_js
-    require_submodule('UnittestJS', 'unittest_js')
-  end
-  
-  
-  def self.require_qunit
-    unless File.exist?(Wombat::VENDOR_DIR.join('qunit', 'qunit'))
-      puts 'file not exist'
-       unless get_submodule('QUnit', 'qunit')
-         puts 'submodule git failed'
-         exit
-       end
-    end
   end
   
   
@@ -149,7 +132,7 @@ namespace :wombat do
       )
       closure.compile(File.open(Wombat::BUILD_DIR.join('wombat-debug.js')))
     rescue Closure::Error => e
-      puts.e
+      puts e
     end
   end
 
@@ -174,70 +157,34 @@ namespace :wombat do
 end
 
 
+# inspired from http://7enn.com/2011/03/13/running-rake-automatically-when-rb-file-changes/
+task :watch do
+  require 'watchr'
+
+  all_js = Dir[Wombat::SOURCE_DIR.join('**/*.js')].join('|')
+  script = Watchr::Script.new
+  script.watch(all_js) { system("rake") }
+  controller = Watchr::Controller.new(script, Watchr.handler.new)
+
+  trap('INT') { exit }
+  controller.run
+end
+
+
+desc "runs BDD tests"
 task :test => ['test:run']
 
+
 namespace :test do
-  task :run => [:build] do
-    browsers_to_test = ENV['BROWSERS'] && ENV['BROWSERS'].split(',')
-    runner           = UnittestJS::WEBrickRunner::Runner.new(:test_dir => Wombat::TEST_RUN_DIR)
-    
-    Dir[Wombat::TEST_RUN_DIR.join('*_test.html')].each do |file|
-      file = File.basename(file)
-      test = file.sub('_test.html', '')
-      runner.add_test(file)
-    end
-    
-    UnittestJS::Browser::SUPPORTED.each do |browser|
-      unless browsers_to_test && !browsers_to_test.include?(browser)
-        runner.add_browser(browser.to_sym)
-      end
-    end
-    
-    trap('INT') { runner.teardown; exit }
-    runner.run
-  end
-  
-  
-  task :build => [:clean, 'wombat:build_debug'] do
-    # we don't use the shiped client-side framework of unittest_js because of conflicts with prototype.js
-    # instead we use qunit. so we also need to move qunit files to the assets folder manually
-    require 'tmpdir'
-    
-    Dir.mktmpdir do |tmpdir|
-      FileUtils.cp(Dir[Wombat::BUILD_DIR.join('*.js')], tmpdir)
-      FileUtils.cp(Dir[Wombat::VENDOR_DIR.join('qunit', 'qunit', '*')], tmpdir)
-      
-      builder = UnittestJS::Builder::SuiteBuilder.new({
-        :input_dir  => Wombat::TEST_DIR,
-        :assets_dir => tmpdir,
-        :output_dir => Wombat::TEST_RUN_DIR,
-      })
-      
-      builder.collect
-      builder.render
-    end
-  end
-  
-  
-  task :clean => [:require] do
-    UnittestJS::Builder.empty_dir!(Wombat::TEST_RUN_DIR)
-  end
-  
-  
-  desc "shows a list of supported browsers, with an asterix for those which are installed"
-  task :list_browsers => [:require] do
-    UnittestJS::Browser::SUPPORTED.each do |browser|
-      # TODO: clean this
-      browser_name = browser != 'ie' ? browser != 'webkit' ? browser.capitalize : 'WebKit' : 'IE'
-      browser_inst = UnittestJS::Browser.const_get(browser_name).new
-      
-      puts (browser_inst.supported? ? '*' : ' ') + ' ' + browser_inst.name
-    end
-  end
-  
-  
+  task :run => [:require, :jasmine]
+
+
   task :require do
-    Wombat.require_unittest_js
-    Wombat.require_qunit
+    begin
+      require 'jasmine'
+      load 'jasmine/tasks/jasmine.rake'
+    rescue LoadError
+      abort "Jasmine is not available. In order to run jasmine, you must: (sudo) gem install jasmine"
+    end
   end
 end

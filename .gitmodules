@@ -4,9 +4,3 @@
 [submodule "vendor/closure-compiler"]
 	path = vendor/closure-compiler
 	url = git://github.com/documentcloud/closure-compiler.git
-[submodule "vendor/unittest_js"]
-	path = vendor/unittest_js
-	url = git://github.com/ngryman/unittest_js.git
-[submodule "vendor/qunit"]
-	path = vendor/qunit
-	url = git://github.com/jquery/qunit.git

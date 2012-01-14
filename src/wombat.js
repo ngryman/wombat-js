@@ -34,7 +34,7 @@
     
     function notImplemented() {
         throw new Error(arguments.callee + " is not implemented yet in " + this.getClassName());
-    };
+    }
     
     
     this.wombat = this.wb = {
