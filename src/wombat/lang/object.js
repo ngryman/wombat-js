@@ -4,6 +4,17 @@
 
 
   /**
+   * Returns whether the value is an object or not.
+   * This method does not consider null as an object.
+   *
+   * @param {?} val The value to be tested.
+   */
+  function isObject(val) {
+    return val === Object(val);
+  }
+
+
+  /**
    * Mix-in source object to target object, overriding eventually common properties.
    * @see Object.merge
    * @static
@@ -137,10 +148,36 @@
   }
 
 
+  /**
+   * Clones an object and returns an deep copy of it.
+   *
+   * @param {Object} source Object to be cloned.
+   * @return {Object} The cloned object.
+   */
+  function clone(source) {
+    // returns a new instance of immutable types (string, numbers, etc...)
+    if (!(Object.isObject(source) | Array.isArray(source))) return source.constructor(source);
+
+    // instantiates the clone, keep the same prototype chain
+    var result = new source.constructor, sourceProp;
+    for (var property in source) {
+      sourceProp = source[property];
+      if (!Function.isFunction(sourceProp) && (Object.isObject(sourceProp) || Array.isArray(sourceProp)))
+        result[property] = Object.clone(sourceProp);
+      else
+        result[property] = sourceProp;
+    }
+
+    return result;
+  }
+
+
   // improve Object
   mixin(Object, {
+    isObject: isObject,
     mixin: mixin,
     merge: merge,
+    clone: clone,
     _oop:  _oop
   });
 

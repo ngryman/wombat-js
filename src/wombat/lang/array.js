@@ -5,233 +5,6 @@
 
 
   /**
-   * Array#indexOf polyfill
-   * Returns the first index at which a given element can be found in the array, or -1 if it is not present.
-   * @see https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/indexOf
-   * @see http://kangax.github.com/es5-compat-table/
-   *
-   * @param {Object} item The item to search in the array.
-   * @param {Number} [fromIndex] From which index the search begins.
-   * @return {Number} The index of the element if found, or -1.
-   */
-  function indexOf(item, fromIndex) {
-    "use strict";
-
-    if (this === void 0 || this === null)
-      throw new TypeError();
-
-    var t = Object(this);
-    var len = t.length >>> 0;
-    if (len === 0)
-      return -1;
-
-    var n = 0;
-    if (fromIndex != null) {
-      n = Number(fromIndex);
-      if (n !== n) // shortcut for verifying if it's NaN
-        n = 0;
-      else if (n !== 0 && n !== Infinity && n !== -Infinity)
-        n = (n > 0 || -1) * Math.floor(Math.abs(n));
-    }
-
-    if (n > len)
-      return -1;
-
-    var k = n >= 0 ? n : Math.max(len - Math.abs(n), 0);
-    for (; k < len; k++)
-      if (k in t && t[k] === item)
-        return k;
-    return -1;
-  }
-
-
-  /**
-   * Array#lastIndexOf polyfill
-   * Returns the last index at which a given element can be found in the array, or -1 if it is not present.
-   * The array is searched backwards, starting at fromIndex.
-   * @see https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/lastIndexOf
-   * @see http://kangax.github.com/es5-compat-table/
-   *
-   * @param {Object} item The item to search in the array.
-   * @param {Number} [fromIndex] From which index the search begins.
-   * @return {Number} The index of the item if found, or -1.
-   */
-  function lastIndexOf(item , fromIndex) {
-    "use strict";
-
-    if (this === void 0 || this === null)
-      throw new TypeError();
-
-    var t = Object(this);
-    var len = t.length >>> 0;
-    if (len === 0)
-      return -1;
-
-    var n = 0;
-    if (fromIndex != null) {
-      n = Number(fromIndex);
-      if (n !== n) // shortcut for verifying if it's NaN
-        n = 0;
-      else if (n !== 0 && n !== Infinity && n !== -Infinity)
-        n = (n > 0 || -1) * Math.floor(Math.abs(n));
-    }
-
-    if (n > len)
-      return -1;
-
-    var k = n >= 0 ? Math.min(n, len - 1) : len - Math.abs(n);
-    for (; k >= 0; k--)
-      if (k in t && t[k] === item)
-        return k;
-    return -1;
-  }
-
-
-  /**
-   * Array#filter polyfill
-   * Creates a new array with all elements that pass the test implemented by the provided function.
-   * @see https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/filter
-   * @see http://kangax.github.com/es5-compat-table/
-   *
-   * @param {Function} callback The callback used to filter the array.
-   * @param {Object} [scope] The scope to apply when invoking the callback.
-   * @return {Array} The filtered array.
-   */
-  function filter(callback, scope) {
-    "use strict";
-
-    if (this === void 0 || this === null)
-      throw new TypeError();
-
-    var t = Object(this);
-    var len = t.length >>> 0;
-    if (typeof callback !== 'function')
-      throw new TypeError(callback + "is not a function");
-
-    var res = [];
-    for (var i = 0; i < len; i++) {
-      if (i in t) {
-        var val = t[i]; // in case callback mutates this
-        if (callback.call(scope, val, i, t))
-          res.push(val);
-      }
-    }
-
-    return res;
-  }
-
-
-  /**
-   * Array#forEach polyfill
-   * Executes a provided function once per array element.
-   * @see https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/forEach
-   * @see http://kangax.github.com/es5-compat-table/
-   * @see Array#each
-   *
-   * @param {Function} callback The callback invoked for each item of the array.
-   * @param {Object} [scope] The scope to apply when invoking the callback.
-   */
-  function forEach(callback, scope) {
-    "use strict";
-
-    if (this === void 0 || this === null)
-      throw new TypeError();
-
-    var t = Object(this);
-    var len = t.length >>> 0; // Hack to convert O.length to a UInt32
-    if (typeof callback !== 'function')
-      throw new TypeError(callback + "is not a function");
-
-    for (var i = 0; i < len; i++)
-      if (i in t)
-        callback.call(scope, t[i], i, t);
-  }
-
-
-  /**
-   * Array#every polyfill
-   * Tests whether all elements in the array pass the test implemented by the provided function.
-   * @see https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/every
-   * @see http://kangax.github.com/es5-compat-table/
-   *
-   * @param {Function} callback The callback used to check every item of the array.
-   * @param {Object} scope The scope to apply when invoking the callback.
-   * @return {Boolean} Whether every items of the array passed the tests, or not.
-   */
-  function every(callback, scope) {
-    "use strict";
-
-    if (this === void 0 || this === null)
-      throw new TypeError();
-
-    var t = Object(this);
-    var len = t.length >>> 0; // Hack to convert O.length to a UInt32
-    if (typeof callback !== 'function')
-      throw new TypeError(callback + "is not a function");
-
-    for (var i = 0; i < len; i++)
-      if (i in t && !callback.call(scope, t[i], i, t))
-        return false;
-    return true;
-  }
-
-
-  /**
-   * Array#map polyfill
-   * Creates a new array with the results of calling a provided function on every element in this array.
-   * @see https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/map
-   * @see http://kangax.github.com/es5-compat-table/
-   *
-   * @param {Function} callback The callback invoked for each item of the array.
-   * @param {Object} scope The scope to apply when invoking the callback.
-   * @return {Boolean} The result array.
-   */
-  function map(callback, scope) {
-    "use strict";
-
-    if (this === void 0 || this === null)
-      throw new TypeError();
-
-    var t = Object(this);
-    var len = t.length >>> 0; // Hack to convert O.length to a UInt32
-    if (typeof callback !== 'function')
-      throw new TypeError(callback + "is not a function");
-
-    var res = [];
-    for (var i = 0; i < len; i++)
-      res.push(callback.call(scope, t[i], i, t));
-    return res;
-  }
-
-
-  /**
-   * Array#some polyfill
-   * Tests whether some element in the array passes the test implemented by the provided function.
-   * @see https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/some
-   * @see http://kangax.github.com/es5-compat-table/
-   *
-   * @param {Function} callback The callback invoked for each item of the array.
-   * @param {Object} scope The scope to apply when invoking the callback.
-   */
-  function some(callback, scope) {
-    "use strict";
-
-    if (this === void 0 || this === null)
-      throw new TypeError();
-
-    var t = Object(this);
-    var len = t.length >>> 0; // Hack to convert O.length to a UInt32
-    if (typeof callback !== 'function')
-      throw new TypeError(callback + "is not a function");
-
-    for (var i = 0; i < len; i++)
-      if (i in t && callback.call(scope, t[i], i, t))
-        return true;
-    return false;
-  }
-
-
-  /**
    * Clears the array of all its items.
    * This can be useful when we want to keep the reference and avoid to create a new array instance.
    */
@@ -273,7 +46,7 @@
    *
    * @return {Boolean} Whether the array contains the given item or not.
    */
-  function contains(item, from) {
+  function contain(item, from) {
     return this.indexOf(item, from) != -1;
   }
 
@@ -290,13 +63,28 @@
 
 
   /**
+   * Returns the last item of the array and remove it.
+   *
+   * @return {Object} The last item of the array.
+   */
+  function pop() {
+    var value = this.last();
+    this.removeAt(this.length - 1);
+    return value;
+  }
+
+
+  /**
    * Removes the given item if the array contains it.
    *
    * @param item {Object} The item to remove.
    * @return {Boolean} Whether the item was removed or not.
    */
   function remove(item) {
-    return this.removeAt(this.indexOf(item));
+    var index = this.indexOf(item);
+    if (index >= 0)
+      return this.removeAt(this.indexOf(item));
+    return false;
   }
 
 
@@ -313,24 +101,34 @@
 
 
   /**
+   * Incrementally builds a result value based on the successive results of the iterator. This can be used for array
+   * construction, numerical sums/averages, etc.
+   *
+   * @param {Object} memo The initial value to which the iterator adds.
+   * @param {Function} iterator An iterator function used to build the accumulated result.
+   * @param {Object} [context] The context to use as `this` within calls to the iterator.
+   */
+  function inject(memo, iterator, context) {
+    this.each(function (value, index) {
+      memo = iterator.call(context, memo, value, index);
+    });
+    return memo;
+  }
+
+
+  /**
    * Returns a flattened (one-dimensional) copy of the array, leaving the original array unchanged.
+   * @see https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/Reduce
    *
    * @return {Array} The flattened array.
    */
-  function flattern() {
-    "use strict";
-
-    if (this === void 0 || this === null)
-      throw new TypeError();
-
-    var res = [];
-    var t = Object(this);
-    var len = t.length >>> 0; // Hack to convert O.length to a UInt32
-    for (var i = 0; i < len; i++) {
-      var val = t[i];
-      res.concat(Array.isArray(val) ? val.flattern() : val);
-    }
-    return res;
+  function flatten() {
+    return this.inject([], function (array, value) {
+      if (Array.isArray(value))
+        return array.concat(value.flatten());
+      array.push(value);
+      return array;
+    });
   }
 
 
@@ -342,7 +140,7 @@
   function keep(/* val1, val2, ... */) {
     var values = slice.call(arguments, 0);
     return this.filter(function (item) {
-      return values.contains(item);
+      return values.contain(item);
     });
   }
 
@@ -352,10 +150,10 @@
    *
    * @return {Array} The result array containing only the specified items.
    */
-  function against(/* val1, val2, ... */) {
+  function without(/* val1, val2, ... */) {
     var values = slice.call(arguments, 0);
     return this.filter(function (item) {
-      return !values.contains(item);
+      return !values.contain(item);
     });
   }
 
@@ -366,7 +164,8 @@
    * @return {Number} A random index.
    */
   function randomIndex() {
-    return Math.floor(Math.random() * (this.length + 1));
+    if (this.length == 0) return -1;
+    return Math.floor(Math.random() * this.length);
   }
 
 
@@ -387,7 +186,7 @@
    */
   function randomPop() {
     var index = this.randomIndex(),
-        value = this[this.randomIndex()];
+      value = this[index];
     this.removeAt(index);
     return value;
   }
@@ -398,6 +197,7 @@
    */
   function shuffle() {
     this.sort(_shuffleSort);
+    return this;
   }
 
 
@@ -412,69 +212,67 @@
 
 
   /**
-   * Invokes a method for each element of the array and stores the results in a new array.
+   * Invokes a method for each item of the array and stores the results in a new array.
    *
    * @param {Function} method The method to invoke for each item of the array.
-   * @return {Array} The result array.
+   * @return {Array} An array of returned values.
    */
   function invoke(method) {
-    var args = slice(arguments, 1);
+    var args = slice.call(arguments, 1);
     return this.map(function (item) {
-      return item[methodName].apply(item, args);
+      return item[method].apply(item, args);
     });
   }
 
 
-  // polyfills
-  Object.merge(Array, {
-    indexOf: indexOf,
-    lastIndexOf: lastIndexOf,
-    filter: filter,
-    forEach: forEach,
-    every: every,
-    map: map,
-    some: some
-  });
+  /**
+   * Pre-baked implementation for a common use-case that fetch the same property for all the
+   * items of the array.
+   *
+   * @param {String} property The name of the property to fetch.
+   * @return {Array} An array of property values.
+   */
+  function pluck(property) {
+    return this.map(function (item) {
+      return item[property];
+    });
+  }
 
 
-  // improve Array
+  /**
+   * Returns a deep copy of the array.
+   *
+   * @return {Array} The cloned array.
+   */
+  /*function clone() {
+    return this.inject([], function (array, value) {
+      array.push(Array.isArray(value) ? value.clone() : value);
+      return array;
+    });
+  }*/
+
+
+  /** improve Array */
   Array.implement({
     clear:       clear,
     first:       first,
     last:        last,
-    contains:    contains,
+    contain:     contain,
     remove:      remove,
     removeAt:    removeAt,
+    pop:         pop,
     compact:     compact,
-    flattern:    flattern,
+    inject:      inject,
+    flatten:     flatten,
     keep:        keep,
-    against:     against,
+    without:     without,
     random:      random,
     randomPop:   randomPop,
     randomIndex: randomIndex,
     shuffle:     shuffle,
     invoke:      invoke,
-    each:        forEach
-  });
-
-
-  /**
-   * Array#isArray polyfill
-   * Returns true if an object is an array, false if it is not.
-   * @see https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/isArray
-   * @see http://kangax.github.com/es5-compat-table/
-   *
-   * @param {Object} v The value to test.
-   * @return {Boolean} ture if an object is an array, or false.
-   */
-  function isArray(v) {
-    return Object.prototype.toString.call(v) == '[object Array]';
-  }
-
-
-  // improve Array
-  Object.mixin(Array, {
-    isArray: isArray
+    pluck:       pluck,
+    each:        Array.prototype.forEach
   });
 
 })();
